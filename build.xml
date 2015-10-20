@@ -10,6 +10,16 @@
     <fileset dir="${lib.dir}" includes="**/*.jar"/>
   </path>
 
+  <pathconvert property="manifest.classpath" pathsep=" ">
+    <path refid="classpath"/>
+    <mapper>
+      <chainedmapper>
+        <flattenmapper/>
+        <globmapper from="*.jar" to="lib/*.jar"/>
+      </chainedmapper>
+    </mapper>
+  </pathconvert>
+
   <target name="compile" description="compiles the source">
     <mkdir dir="${build.dir}"/>
     <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="classpath" includeantruntime="false" />
@@ -19,7 +29,12 @@
   </target>
 
   <target name="jar-client" depends="compile" description="generate a jar executable" >
-    <jar jarfile="Client.jar" basedir="${build.dir}" />
+    <jar jarfile="Client.jar" basedir="${build.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="asl/client/Client" />
+        <attribute name="Class-Path" value="${manifest.classpath}"/>
+      </manifest>
+    </jar>
   </target>
 
   <target name="run-client" depends="jar-client" description="execute the jar file" >
