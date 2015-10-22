@@ -6,6 +6,7 @@
   <property name="lib.dir"    location="lib"/>
   <property name="rsc.dir"    location="resources"/>
   <property name="client-class" value="asl.client.Client"/>
+  <property name="node-class" value="asl.middleware.Node"/>
   <path id="classpath">
     <fileset dir="${lib.dir}" includes="**/*.jar"/>
   </path>
@@ -28,10 +29,19 @@
     </copy>
   </target>
 
-  <target name="jar-client" depends="compile" description="generate a jar executable" >
+  <target name="jar-client" depends="compile" description="generate a jar executable for the client" >
     <jar jarfile="Client.jar" basedir="${build.dir}">
       <manifest>
         <attribute name="Main-Class" value="asl/client/Client" />
+        <attribute name="Class-Path" value="${manifest.classpath}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="jar-node" depends="compile" description="generate a jar executable for the middleware" >
+    <jar jarfile="Node.jar" basedir="${build.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="asl/client/Node" />
         <attribute name="Class-Path" value="${manifest.classpath}"/>
       </manifest>
     </jar>
@@ -43,8 +53,19 @@
         <path refid="classpath"/>
         <path location="Client.jar"/>
       </classpath>
-      <arg value="${user}"/>
-      <arg value="${password}"/>
+      <arg value="${host}"/>
+      <arg value="${port}"/>
+      <arg value="${id}"/>
+    </java>
+  </target>
+
+  <target name="run-node" depends="jar-node" description="execute the middleware node" >
+    <java classname="${node-class}" fork="true">
+      <classpath>
+        <path refid="classpath"/>
+        <path location="Node.jar"/>
+      </classpath>
+      <arg value="${port}"/>
     </java>
   </target>
 
