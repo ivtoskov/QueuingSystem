@@ -36,27 +36,30 @@ public class Client {
       logger.error("Usage: java -jar Client <host> <port> <client-id>");
       System.exit(1);
     }
+
+    // Try to open a connection to the middleware
     try {
       socket = new Socket(host, port);
       oos = new ObjectOutputStream(socket.getOutputStream());
       oos.flush();
       ois = new ObjectInputStream(socket.getInputStream());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Error occurred while connecting to the middleware.");
     }
 
+    // Initialize scanner to parse user input
     Scanner sc = new Scanner(System.in);
+    // Initialize a map with different command handlers
     Map<String, CommandBuilder> commandsMap = initializeCommands();
     while(sc.hasNext()) {
       try {
         String commandArgs[] = sc.nextLine().split("\\s+");
         Command command = commandsMap.get(commandArgs[0]+commandArgs[1]).createCommand(sc, id, commandArgs);
         oos.writeObject(command);
-        Message response = (Message) ois.readObject();
-        logger.info(response.getContent()); // TODO
+        String response = (String) ois.readObject();
+        logger.info(response);
       } catch (ArrayIndexOutOfBoundsException | NumberFormatException | NullPointerException |NoSuchElementException|
       IllegalStateException e) {
-        e.printStackTrace();
         logger.error("Invalid command");
       } catch (IOException | ClassNotFoundException e) {
         logger.error("Connection error");
@@ -65,6 +68,12 @@ public class Client {
     close();
   }
 
+  /**
+   * Initialize a map containing a string key that describes a command
+   * and a CommandBuilder value that represents the corresponding command handler.
+   *
+   * @return A Map containing a command handler for each possible command.
+   */
   private static Map<String, CommandBuilder> initializeCommands() {
     Map<String, CommandBuilder> commandsMap = new HashMap<String, CommandBuilder>();
     commandsMap.put("deletequeue", new DeleteQueueCommandBuilder());
@@ -79,12 +88,15 @@ public class Client {
     return commandsMap;
   }
 
+  /**
+   * Safely free the unclosed resources.
+   */
   private static void close() {
     if(socket != null && !socket.isClosed()){
       try {
         socket.close();
       } catch (IOException e) {
-        // Cannot handle
+        logger.error("Cannot close server socket.");
       }
     }
 
@@ -92,7 +104,7 @@ public class Client {
       try {
         ois.close();
       } catch (IOException e) {
-        // Cannot handle
+        logger.error("Cannot close server input stream.");
       }
     }
 
@@ -100,7 +112,7 @@ public class Client {
       try {
         oos.close();
       } catch (IOException e) {
-        // Cannot handle
+        logger.error("Cannot close server output stream.");
       }
     }
   }

@@ -20,7 +20,7 @@ public class ClientSocketController {
             final ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             clientSockets.add(new SocketWrapper(socket, ois, oos));
         } catch (IOException e) {
-            // Cannot handle
+            logger.error("Error while opening a client socket.");
         }
     }
 
@@ -29,19 +29,17 @@ public class ClientSocketController {
     }
 
     public static synchronized SocketWrapper get() {
-        int size = clientSockets.size();
-        SocketWrapper sw = clientSockets.poll();
-        if(size > 0 && size == clientSockets.size()) logger.info("imame problem");
-        return sw;
+        return clientSockets.poll();
     }
 
     public static synchronized void shutDown() {
+        notShutDown = false;
         for(SocketWrapper sw: clientSockets) {
             if(sw != null) {
                 sw.close();
             }
         }
-        notShutDown = false;
         clientSockets.clear();
+        ConnectionPool.shutDown();
     }
 }

@@ -3,8 +3,13 @@ package asl.middleware;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class Node {
     private static Logger logger = Logger.getLogger(Node.class);
@@ -23,6 +28,7 @@ public class Node {
         Socket clientSocket = null;
         try {
             serverSocket = new ServerSocket(port);
+            initConnections();
             initWorkers();
             (new Thread(new MiddlewareTerminator(serverSocket))).start();
             while (ClientSocketController.notShutDown) {
@@ -51,8 +57,28 @@ public class Node {
         int numberOfWorkers = Runtime.getRuntime().availableProcessors();
         while(numberOfWorkers-- > 0) {
             Worker w = new Worker();
-            logger.info(w);
             (new Thread(w)).start();
+        }
+    }
+
+    private static void initConnections() {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            logger.error("Cannot load a driver for PostgreSQL.");
+            return;
+        }
+
+        int numberOfWorkers = Runtime.getRuntime().availableProcessors() / 4;
+        ++numberOfWorkers;
+        while(numberOfWorkers-- > 0) {
+            try {
+                Connection c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/ASL", "kennelcrash", "limuzina");
+                ConnectionPool.add(c);
+            } catch (SQLException e) {
+                logger.error("Error while opening a connection.");
+                e.printStackTrace();
+            }
         }
     }
 }

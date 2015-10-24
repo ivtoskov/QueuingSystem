@@ -15,6 +15,10 @@ public class Command implements Serializable {
         return msg;
     }
 
+    public asl.util.Command.Type getType() {
+        return type;
+    }
+
     public enum Type {
         CREATE_QUEUE, DELETE_QUEUE, PEEK_QUEUE, POP_QUEUE, SEND_TO,
         SEND_BROADCAST, POP_SENDER, PEEK_SENDER, QUERY_QUEUE
