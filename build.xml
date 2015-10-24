@@ -41,7 +41,7 @@
   <target name="jar-node" depends="compile" description="generate a jar executable for the middleware" >
     <jar jarfile="Node.jar" basedir="${build.dir}">
       <manifest>
-        <attribute name="Main-Class" value="asl/client/Node" />
+        <attribute name="Main-Class" value="asl/middleware/Node" />
         <attribute name="Class-Path" value="${manifest.classpath}"/>
       </manifest>
     </jar>

@@ -19,6 +19,9 @@ import java.net.UnknownHostException;
 
 public class Client {
   private static Logger logger = Logger.getLogger(Client.class);
+  private static Socket socket;
+  private static ObjectInputStream ois;
+  private static ObjectOutputStream oos;
 
   public static void main(String[] args) {
     int id = -1, port = -1;
@@ -33,6 +36,14 @@ public class Client {
       logger.error("Usage: java -jar Client <host> <port> <client-id>");
       System.exit(1);
     }
+    try {
+      socket = new Socket(host, port);
+      oos = new ObjectOutputStream(socket.getOutputStream());
+      oos.flush();
+      ois = new ObjectInputStream(socket.getInputStream());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
     Scanner sc = new Scanner(System.in);
     Map<String, CommandBuilder> commandsMap = initializeCommands();
@@ -40,12 +51,18 @@ public class Client {
       try {
         String commandArgs[] = sc.nextLine().split("\\s+");
         Command command = commandsMap.get(commandArgs[0]+commandArgs[1]).createCommand(sc, id, commandArgs);
-        sendCommand(command, host, port);
+        oos.writeObject(command);
+        Message response = (Message) ois.readObject();
+        logger.info(response.getContent()); // TODO
       } catch (ArrayIndexOutOfBoundsException | NumberFormatException | NullPointerException |NoSuchElementException|
-      IllegalStateException e) { // TODO
+      IllegalStateException e) {
+        e.printStackTrace();
         logger.error("Invalid command");
+      } catch (IOException | ClassNotFoundException e) {
+        logger.error("Connection error");
       }
     }
+    close();
   }
 
   private static Map<String, CommandBuilder> initializeCommands() {
@@ -62,18 +79,29 @@ public class Client {
     return commandsMap;
   }
 
-  private static void sendCommand(Command c, String host, int port) {
-    try(Socket socket = new Socket(host, port);
-        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());) {
-      oos.writeObject(c);
-      Message response = (Message) ois.readObject();
-    } catch (UnknownHostException e) {
-      logger.error("Cannot connect to host: " + host);
-    } catch (IOException e) {
-      logger.error("Problem encountered while connecting to the server.");
-    } catch (ClassNotFoundException e) {
-      logger.error("Invalid response from server.");
+  private static void close() {
+    if(socket != null && !socket.isClosed()){
+      try {
+        socket.close();
+      } catch (IOException e) {
+        // Cannot handle
+      }
+    }
+
+    if(ois != null) {
+      try {
+        ois.close();
+      } catch (IOException e) {
+        // Cannot handle
+      }
+    }
+
+    if(oos != null) {
+      try {
+        oos.close();
+      } catch (IOException e) {
+        // Cannot handle
+      }
     }
   }
 }

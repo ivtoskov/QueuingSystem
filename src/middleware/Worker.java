@@ -5,40 +5,62 @@ import asl.util.Message;
 
 import org.apache.log4j.Logger;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import java.lang.InterruptedException;
 import java.net.Socket;
 
 public class Worker implements Runnable {
     private Logger logger = Logger.getLogger(Worker.class);
-    private final Socket socket;
+    private Socket socket;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
 
-    public Worker(Socket socket) {
-        this.socket = socket;
-    }
+    public Worker() {}
 
     @Override
     public void run() {
-        ObjectOutputStream oos = null;
-        ObjectInputStream ois = null;
-        try {
-            ois = new ObjectInputStream(socket.getInputStream());
-            oos = new ObjectOutputStream(socket.getOutputStream());
-            Command command = (Command) ois.readObject();
-        } catch (IOException e) {
-            logger.error("Problem encountered while connecting to the client.");
-        } catch (ClassNotFoundException e) {
-            logger.error("Invalid response from client.");
-        } finally {
-            if(socket != null && !socket.isClosed()) {
+        SocketWrapper sw = ClientSocketController.get();
+        boolean ret;
+        while (ClientSocketController.notShutDown) {
+            ret = true;
+            if(sw == null) {
                 try {
-                    socket.close();
-                } catch (IOException e) {
-                    // Cannot handle
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error("The worker got interrupted.");
                 }
+            } else {
+                ret = handle(sw);
+                if(ret)
+                    ClientSocketController.add(sw);
             }
+
+            sw = ClientSocketController.get();
         }
     }
+
+    public boolean handle(SocketWrapper sw) {
+        socket = sw.getSocket();
+        ois = sw.getOis();
+        oos = sw.getOos();
+        try {
+            Command command = (Command) ois.readObject();
+            Message m = new Message("Hello", 1, 2); // TODO
+            oos.writeObject(m);
+        } catch (EOFException e) {
+            logger.error("EOF Exception");
+            return false;
+        } catch (IOException e) {
+            logger.error("Problem encountered while connecting to the client or the system has been shut down.");
+        } catch (ClassNotFoundException e) {
+            logger.error("Invalid response from client.");
+        }
+        return true;
+    }
+
+
 }
