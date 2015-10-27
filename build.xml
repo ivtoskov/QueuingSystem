@@ -66,6 +66,8 @@
         <path location="Node.jar"/>
       </classpath>
       <arg value="${port}"/>
+      <arg value="${dbhost}"/>
+      <arg value="${dbport}"/>
     </java>
   </target>
 

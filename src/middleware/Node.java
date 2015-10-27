@@ -16,9 +16,17 @@ public class Node {
 
     public static void main(String args[]) {
         int port = -1;
+        String host = "localhost";
+        int databasePort = 5432;
 
         try {
             port = Integer.parseInt(args[0]);
+            if(args.length > 1)
+                host = args[1];
+
+            if(args.length > 2)
+                databasePort = Integer.parseInt(args[2]);
+
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
             logger.error("Usage: java -jar Node <port>");
             System.exit(1);
@@ -28,7 +36,7 @@ public class Node {
         Socket clientSocket = null;
         try {
             serverSocket = new ServerSocket(port);
-            initConnections();
+            initConnections(host, databasePort);
             initWorkers();
             (new Thread(new MiddlewareTerminator(serverSocket))).start();
             while (ClientSocketController.notShutDown) {
@@ -61,7 +69,7 @@ public class Node {
         }
     }
 
-    private static void initConnections() {
+    private static void initConnections(String host, int port) {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -73,7 +81,8 @@ public class Node {
         ++numberOfWorkers;
         while(numberOfWorkers-- > 0) {
             try {
-                Connection c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/ASL", "kennelcrash", "limuzina");
+                Connection c = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/ASL",
+                        "kennelcrash", "paladin");
                 ConnectionPool.add(c);
             } catch (SQLException e) {
                 logger.error("Error while opening a connection.");

@@ -51,7 +51,7 @@ public class Client {
     Scanner sc = new Scanner(System.in);
     // Initialize a map with different command handlers
     Map<String, CommandBuilder> commandsMap = initializeCommands();
-    while(sc.hasNext()) {
+    while(sc.hasNextLine()) {
       try {
         String commandArgs[] = sc.nextLine().split("\\s+");
         Command command = commandsMap.get(commandArgs[0]+commandArgs[1]).createCommand(sc, id, commandArgs);
