@@ -1,4 +1,4 @@
-<project name="QueuingSystem" default="run-client" basedir=".">
+<project name="QueuingSystem" default="all" basedir=".">
 
   <!-- set global properties for this build -->
   <property name="src.dir"    location="src"/>
@@ -77,4 +77,6 @@
   </target>
 
   <target name="rebuild" depends="clean, compile" description="Clean and build products." />
+
+  <target name="all" depends="run-node, run-client" description="Compile and run all products." />
 </project>

@@ -4,8 +4,14 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import org.apache.log4j.Logger;
 
+/**
+ * A wrapper class that ties together a socket and its
+ * corresponding ObjectInput- and ObjectOutputStream.
+ */
 public class SocketWrapper {
+    private static Logger logger = Logger.getLogger(SocketWrapper.class);
     private final Socket socket;
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
@@ -33,7 +39,7 @@ public class SocketWrapper {
             try {
                 socket.close();
             } catch (IOException e) {
-                // Cannot handle
+                logger.error("Error while closing socket.");
             }
         }
 
@@ -41,7 +47,7 @@ public class SocketWrapper {
             try {
                 ois.close();
             } catch (IOException e) {
-                // Cannot handle
+                logger.error("Error while closing input stream.");
             }
         }
 
@@ -49,7 +55,7 @@ public class SocketWrapper {
             try {
                 oos.close();
             } catch (IOException e) {
-                // Cannot handle
+                logger.error("Error while closing output stream.");
             }
         }
     }

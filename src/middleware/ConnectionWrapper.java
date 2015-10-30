@@ -15,6 +15,21 @@ import asl.util.Command;
 import asl.util.Message;
 
 public class ConnectionWrapper {
+    private static final String FAILED_TO_POP_SENDER = "FAILED to pop sender.";
+    private static final String FAILED_TO_PEEK_SENDER = "FAILED to peek sender.";
+    private static final String FAILED_TO_QUERY_QUEUES = "FAILED to query queues.";
+    private static final String FAILED_TO_SEND_MESSAGE = "FAILED to send message.";
+    private static final String SUCCESSFULLY_SENT_MESSAGE = "SUCCESSFULLY sent message";
+    private static final String FAILED_TO_PROCESS_COMMAND = "FAILED to process command.";
+    private static final String FAILED_TO_POP_QUEUE = "FAILED to pop queue.";
+    private static final String FAILED_TO_PEEK_QUEUE = "FAILED to peek queue.";
+    private static final String FAILED_TO_CREATE_QUEUE = "FAILED to create queue ";
+    private static final String SUCCESSFULLY_CREATED_QUEUE = "SUCCESSFULLY created queue ";
+    private static final String FAILED_TO_DELETE_QUEUE = "FAILED to delete queue ";
+    private static final String SUCCESSFULLY_DELETED_QUEUE = "SUCCESSFULLY deleted queue ";
+    public static final String ERROR_CLOSING_SQL_CONNECTION = "Error while closing SQL connection.";
+    public static final String ERROR_PREPARING_CONNECTION = "Error while preparing the database connection.";
+    public static final String NO_MESSAGES_ARE_WAITING = "No messages are waiting";
     private static Logger logger = Logger.getLogger(ConnectionWrapper.class);
     private static final String CREATE_QUEUE_STRING = " { call create_queue( ? ) }";
     private static final String DELETE_QUEUE_STRING = " { call delete_queue( ? ) }";
@@ -51,18 +66,25 @@ public class ConnectionWrapper {
             this.popSender = connection.prepareCall(POP_SENDER_STRING);
             corrupted = false;
         } catch (SQLException e) {
-            logger.error("Error while preparing the database connection.");
+            logger.error(ERROR_PREPARING_CONNECTION);
             corrupted = true;
         }
     }
 
     public void close() {
         try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
+            if (connection != null && !connection.isClosed()) connection.close();
+            if (createQueue != null && !createQueue.isClosed()) createQueue.close();
+            if (deleteQueue != null && !deleteQueue.isClosed()) createQueue.close();
+            if (peekQueue != null && !peekQueue.isClosed()) peekQueue.close();
+            if (popQueue != null && !popQueue.isClosed()) popQueue.close();
+            if (sendTo != null && !sendTo.isClosed()) sendTo.close();
+            if (sendBroadcast != null && !sendBroadcast.isClosed()) sendBroadcast.close();
+            if (queryQueue != null && !queryQueue.isClosed()) queryQueue.close();
+            if (peekSender != null && !peekSender.isClosed()) peekSender.close();
+            if (popSender != null && !popSender.isClosed()) popSender.close();
         } catch (SQLException e) {
-            logger.error("Error while closing SQL connection.");
+            logger.error(ERROR_CLOSING_SQL_CONNECTION);
         }
     }
 
@@ -87,7 +109,7 @@ public class ConnectionWrapper {
             case POP_SENDER:
                 return popSender(command);
             default:
-                return "Failed to process command.";
+                return FAILED_TO_PROCESS_COMMAND;
         }
 
     }
@@ -96,10 +118,10 @@ public class ConnectionWrapper {
         try {
             createQueue.setInt(1, command.getMsg().getQid());
             createQueue.execute();
-            return "SUCCESSFULLY created queue " + command.getMsg().getQid();
+            return SUCCESSFULLY_CREATED_QUEUE + command.getMsg().getQid();
         } catch (SQLException e) {
-            logger.info("Error while trying to create a queue");
-            return "FAILED to create queue " + command.getMsg().getQid();
+            logger.error(FAILED_TO_CREATE_QUEUE);
+            return FAILED_TO_CREATE_QUEUE + command.getMsg().getQid();
         }
     }
 
@@ -107,10 +129,10 @@ public class ConnectionWrapper {
         try {
             deleteQueue.setInt(1, command.getMsg().getQid());
             deleteQueue.execute();
-            return "SUCCESSFULLY deleted queue " + command.getMsg().getQid();
+            return SUCCESSFULLY_DELETED_QUEUE + command.getMsg().getQid();
         } catch (SQLException e) {
-            logger.info("Error while trying to delete a queue");
-            return "FAILED to delete queue " + command.getMsg().getQid();
+            logger.info(FAILED_TO_DELETE_QUEUE);
+            return FAILED_TO_DELETE_QUEUE + command.getMsg().getQid();
         }
     }
 
@@ -121,13 +143,13 @@ public class ConnectionWrapper {
             peekQueue.setInt(3, command.getMsg().getQid());
             peekQueue.execute();
             String response = peekQueue.getString(1);
-            return response;
+            return (response==null) ? NO_MESSAGES_ARE_WAITING : response;
         } catch (SQLException e) {
             e.printStackTrace();
-            logger.error("Failed to peek queue.");
+            logger.error(FAILED_TO_PEEK_QUEUE);
         }
 
-        return "FAILED to peek queue.";
+        return FAILED_TO_PEEK_QUEUE;
     }
 
     private String popQueue(Command command) {
@@ -137,12 +159,12 @@ public class ConnectionWrapper {
             popQueue.setInt(3, command.getMsg().getQid());
             popQueue.execute();
             String response = popQueue.getString(1);
-            return response;
+            return (response==null) ? NO_MESSAGES_ARE_WAITING : response;
         } catch (SQLException e) {
-            logger.error("Failed to pop queue.");
+            logger.error(FAILED_TO_POP_QUEUE);
         }
 
-        return "FAILED to pop queue.";
+        return FAILED_TO_POP_QUEUE;
     }
 
     private String sendTo(Command command) {
@@ -153,12 +175,12 @@ public class ConnectionWrapper {
             sendTo.setTimestamp(4, new Timestamp((new java.util.Date()).getTime()));
             sendTo.setInt(5, command.getMsg().getRid());
             sendTo.execute();
-            return "SUCCESSFULLY sent message";
+            return SUCCESSFULLY_SENT_MESSAGE;
         } catch (SQLException e) {
-            logger.error("FAILED to send message.");
+            logger.error(FAILED_TO_SEND_MESSAGE);
         }
 
-        return "FAILED to send message.";
+        return FAILED_TO_SEND_MESSAGE;
     }
 
     private String sendBroadcast(Command command) {
@@ -168,12 +190,12 @@ public class ConnectionWrapper {
             sendBroadcast.setInt(3, command.getMsg().getQid());
             sendBroadcast.setTimestamp(4, new Timestamp((new java.util.Date()).getTime()));
             sendBroadcast.execute();
-            return "SUCCESSFULLY sent message";
+            return SUCCESSFULLY_SENT_MESSAGE;
         } catch (SQLException e) {
-            logger.error("FAILED to send message.");
+            logger.error(FAILED_TO_SEND_MESSAGE);
         }
 
-        return "FAILED to send message.";
+        return FAILED_TO_SEND_MESSAGE;
     }
 
     private String queryQueue(Command command) {
@@ -184,10 +206,10 @@ public class ConnectionWrapper {
             String response = queryQueue.getString(1);
             return response;
         } catch (SQLException e) {
-            logger.error("Failed to query queues.");
+            logger.error(FAILED_TO_QUERY_QUEUES);
         }
 
-        return "FAILED to query queues.";
+        return FAILED_TO_QUERY_QUEUES;
     }
 
     private String peekSender(Command command) {
@@ -197,12 +219,12 @@ public class ConnectionWrapper {
             peekSender.setInt(3, command.getMsg().getSid());
             peekSender.execute();
             String response = peekSender.getString(1);
-            return response;
+            return (response==null) ? NO_MESSAGES_ARE_WAITING : response;
         } catch (SQLException e) {
-            logger.error("Failed to peek sender.");
+            logger.error(FAILED_TO_PEEK_SENDER);
         }
 
-        return "FAILED to peek sender.";
+        return FAILED_TO_PEEK_SENDER;
     }
 
     private String popSender(Command command) {
@@ -212,12 +234,12 @@ public class ConnectionWrapper {
             popSender.setInt(3, command.getMsg().getSid());
             popSender.execute();
             String response = popSender.getString(1);
-            return response;
+            return (response==null) ? NO_MESSAGES_ARE_WAITING : response;
         } catch (SQLException e) {
-            logger.error("Failed to pop sender.");
+            logger.error(FAILED_TO_POP_SENDER);
         }
 
-        return "FAILED to pop sender.";
+        return FAILED_TO_POP_SENDER;
     }
 
     public boolean isCorrupted() {

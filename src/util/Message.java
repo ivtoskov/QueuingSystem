@@ -3,6 +3,10 @@ package asl.util;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
+/**
+ * JavaBean class that corresponds
+ * to a message in the system.
+ */
 public class Message implements Serializable {
     private final String content;
     private final int sid;

@@ -13,7 +13,7 @@ import java.io.ObjectOutputStream;
 import java.lang.InterruptedException;
 import java.net.Socket;
 
-public class Worker implements Runnable {
+public class Worker extends Thread {
     private Logger logger = Logger.getLogger(Worker.class);
     private Socket socket;
     private ObjectInputStream ois;
@@ -23,24 +23,26 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-        SocketWrapper sw = ClientSocketController.get();
+        logger.info("Starting Worker " + this);
+        Node.mt.workers.add(Thread.currentThread());
         boolean ret;
-        while (ClientSocketController.notShutDown) {
-            ret = true;
-            if(sw == null) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error("The worker got interrupted.");
-                }
-            } else {
+        SocketWrapper sw = null;
+        while (Node.notShutDown) {
+            try {
+                sw = Node.sockets.take();
                 ret = handle(sw);
-                if(ret)
-                    ClientSocketController.add(sw);
+                if(ret && Node.notShutDown) {
+                    Node.sockets.put(sw);
+                } else {
+                    if(sw != null) sw.close();
+                    Node.socketsToBeClosed.remove(sw);
+                }
+            } catch (InterruptedException e) {
+                logger.error("The worker got interrupted.");
+                break;
             }
-
-            sw = ClientSocketController.get();
         }
+        logger.info("Terminating Worker " + this);
     }
 
     public boolean handle(SocketWrapper sw) {
@@ -49,22 +51,18 @@ public class Worker implements Runnable {
         oos = sw.getOos();
         ConnectionWrapper cw = null;
         try {
-            Command command = (Command) ois.readObject();
-            cw = ConnectionPool.get();
-            while(cw == null) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error("The worker got interrupted.");
+            Command command = (Command) ois.readUnshared();
+            try {
+                cw = Node.connections.take();
+                String response = cw.handle(command);
+                if(cw != null && !cw.isCorrupted()) {
+                    Node.connections.put(cw);
                 }
-                cw = ConnectionPool.get();
+                oos.writeUnshared(response);
+                oos.flush();
+            } catch (InterruptedException e) {
+                logger.error("The worker got interrupted.");
             }
-            String response = cw.handle(command);
-            if(cw != null && !cw.isCorrupted()) {
-                ConnectionPool.add(cw);
-                cw = null;
-            }
-            oos.writeObject(response);
         } catch (EOFException e) {
             logger.error("EOF Exception. Probably the client disconnected.");
             return false;
@@ -72,9 +70,6 @@ public class Worker implements Runnable {
             logger.error("Problem encountered while connecting to the client or the system has been shut down.");
         } catch (ClassNotFoundException e) {
             logger.error("Invalid response from client.");
-        } finally {
-            if(cw != null && !cw.isCorrupted())
-                ConnectionPool.add(cw);
         }
         return true;
     }

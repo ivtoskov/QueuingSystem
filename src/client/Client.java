@@ -5,10 +5,13 @@ import org.apache.log4j.Logger;
 import asl.util.Message;
 import asl.util.Command;
 
+import java.io.*;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
 import java.util.Scanner;
 import java.util.Map;
 import java.util.HashMap;
@@ -17,11 +20,16 @@ import java.util.NoSuchElementException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+/**
+ * A client class that reads commands from the standard input
+ * and sends them to the middleware.
+ */
 public class Client {
   private static Logger logger = Logger.getLogger(Client.class);
   private static Socket socket;
   private static ObjectInputStream ois;
   private static ObjectOutputStream oos;
+  private static Scanner sc;
 
   public static void main(String[] args) {
     int id = -1, port = -1;
@@ -40,24 +48,32 @@ public class Client {
     // Try to open a connection to the middleware
     try {
       socket = new Socket(host, port);
-      oos = new ObjectOutputStream(socket.getOutputStream());
+      oos = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
       oos.flush();
-      ois = new ObjectInputStream(socket.getInputStream());
+      ois = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
     } catch (IOException e) {
       logger.error("Error occurred while connecting to the middleware.");
     }
 
     // Initialize scanner to parse user input
-    Scanner sc = new Scanner(System.in);
+    sc = new Scanner(System.in);
     // Initialize a map with different command handlers
     Map<String, CommandBuilder> commandsMap = initializeCommands();
     while(sc.hasNextLine()) {
       try {
+        // Build a command read from standard input
         String commandArgs[] = sc.nextLine().split("\\s+");
         Command command = commandsMap.get(commandArgs[0]+commandArgs[1]).createCommand(sc, id, commandArgs);
-        oos.writeObject(command);
-        String response = (String) ois.readObject();
-        logger.info(response);
+
+        // Send the command to the middleware
+        oos.writeUnshared(command);
+        oos.flush();
+
+        // Read the response and calculate the elapsed time
+        long start = System.currentTimeMillis();
+        String response = (String) ois.readUnshared();
+        long end = System.currentTimeMillis();
+        logger.info(response + " Responsetime: " + (end-start) + "ms");
       } catch (ArrayIndexOutOfBoundsException | NumberFormatException | NullPointerException |NoSuchElementException|
       IllegalStateException e) {
         logger.error("Invalid command");
@@ -114,6 +130,10 @@ public class Client {
       } catch (IOException e) {
         logger.error("Cannot close server output stream.");
       }
+    }
+
+    if(sc != null) {
+      sc.close();
     }
   }
 }

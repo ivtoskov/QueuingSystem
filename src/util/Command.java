@@ -2,6 +2,10 @@ package asl.util;
 
 import java.io.Serializable;
 
+/**
+ * A class that corresponds to the different commands
+ * supported by the middleware.
+ */
 public class Command implements Serializable {
     private final Message msg;
     private final Command.Type type;
