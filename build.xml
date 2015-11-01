@@ -7,6 +7,7 @@
   <property name="rsc.dir"    location="resources"/>
   <property name="client-class" value="asl.client.Client"/>
   <property name="node-class" value="asl.middleware.Node"/>
+  <property name="benchmark-class" value="asl.benchmark.BenchmarkExecutor"/>
   <path id="classpath">
     <fileset dir="${lib.dir}" includes="**/*.jar"/>
   </path>
@@ -47,6 +48,15 @@
     </jar>
   </target>
 
+  <target name="jar-benchmark" depends="compile" description="generate a jar executable for benchmarking" >
+    <jar jarfile="Benchmark.jar" basedir="${build.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="asl/benchmark/BenchmarkExecutor" />
+        <attribute name="Class-Path" value="${manifest.classpath}"/>
+      </manifest>
+    </jar>
+  </target>
+
   <target name="run-client" depends="jar-client" description="execute the jar file" >
     <java classname="${client-class}" fork="true">
       <classpath>
@@ -71,6 +81,17 @@
     </java>
   </target>
 
+  <target name="run-benchmark" depends="jar-benchmark" description="execute benchmark" >
+    <java classname="${benchmark-class}" fork="true">
+      <classpath>
+        <path refid="classpath"/>
+        <path location="Benchmark.jar"/>
+      </classpath>
+      <arg value="${host}"/>
+      <arg value="${port}"/>
+    </java>
+  </target>
+
   <target name="clean" description="clean up" >
     <delete dir="${build.dir}"/>
     <delete file="$Client.jar"/>
@@ -78,5 +99,5 @@
 
   <target name="rebuild" depends="clean, compile" description="Clean and build products." />
 
-  <target name="all" depends="run-node, run-client" description="Compile and run all products." />
+  <target name="all" depends="run-node, run-client, run-benchmark" description="Compile and run all products." />
 </project>
