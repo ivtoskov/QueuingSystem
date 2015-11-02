@@ -38,13 +38,14 @@ public class BenchmarkExecutor {
         // Specify the 'System under test'
         logger.info("Please select the SUT of the benchmark: ");
         logger.info("1) database");
-        logger.info("2) middleware");
-        logger.info("3) whole system");
+        logger.info("2) whole system");
         int sutType = sc.nextInt();
 
         // Specify the duration of the test
         logger.info("Please specify the duration of the test in seconds: ");
         int duration = sc.nextInt();
+        BenchmarkInfo benchmarkInfo = new BenchmarkInfo();
+        benchmarkInfo.setDuration(duration);
 
         while (true) {
             // Specify the type of operation to test
@@ -59,13 +60,75 @@ public class BenchmarkExecutor {
             logger.info("6) to run the experiment");
             int operationType = sc.nextInt();
             if (operationType == 6) break;
+            benchmarkInfo.setOperationType(operationType);
 
-            switch (sutType) {
-                case 1:
-                    testInstances.add(DatabaseBenchmark.prepare(host, port, operationType, duration, sc));
+            logger.info("Please type in the number of clients you want to start: ");
+            int numOfClients = sc.nextInt();
+
+            logger.info("Please type in the offset of the id's: ");
+            int offset = sc.nextInt();
+
+            switch (operationType) {
+                case SEND_MESSAGE:
+                    logger.info("Please type in the length of the messages: ");
+                    int msgLength = sc.nextInt();
+                    benchmarkInfo.setMessageLength(msgLength);
+                    logger.info("Type in 1 if you want to cross send, 0 if you want to broadcast: ");
+                    int broadCastOrCrossSend = sc.nextInt();
+                    if(broadCastOrCrossSend == 1) benchmarkInfo.setCrossSend(true);
+                    else if(broadCastOrCrossSend == 0) benchmarkInfo.setBroadcast(true);
+                    else {
+                        logger.info("Type in the number of receivers: ");
+                        int numOfReceivers = sc.nextInt();
+                        int[] receivers = new int[numOfReceivers];
+                        logger.info("Type in the first receiver: ");
+                        int firstReceiver = sc.nextInt();
+                        for(int i = 0; i < numOfReceivers; ++i) {
+                            receivers[i] = firstReceiver + i;
+                        }
+                        benchmarkInfo.setReceivers(receivers);
+                    }
+                case POP_QUEUE:
+                case PEEK_QUEUE:
+                    logger.info("Type in the number of queues(0 to cross queue): ");
+                    int numOfQueues = sc.nextInt();
+                    if(numOfQueues == 0) benchmarkInfo.setCrossQueue(true);
+                    else {
+                        int[] queues = new int[numOfQueues];
+                        logger.info("Type in the first queue: ");
+                        int firstQueue = sc.nextInt();
+                        for(int i = 0; i < numOfQueues; ++i) {
+                            queues[i] = firstQueue + i;
+                        }
+                        benchmarkInfo.setQueues(queues);
+                    }
+                    break;
+                case POP_SENDER:
+                case PEEK_SENDER:
+                    logger.info("Type in the number of senders to peek/pop from: ");
+                    int numOfSenders = sc.nextInt();
+                    if(numOfSenders == 0) benchmarkInfo.setCrossSend(true);
+                    else {
+                        int[] senders = new int[numOfSenders];
+                        logger.info("Type in the first sender: ");
+                        int firstSender = sc.nextInt();
+                        for(int i = 0; i < numOfSenders; ++i) {
+                            senders[i] = firstSender + i;
+                        }
+                        benchmarkInfo.setSenders(senders);
+                    }
                     break;
             }
 
+            switch (sutType) {
+                case 1:
+                    for(int i = 0; i < numOfClients; ++i) {
+                        testInstances.add(DatabaseBenchmark.prepare(host, port, offset + i, benchmarkInfo));
+                    }
+                    break;
+            }
+
+            benchmarkInfo.reset();
         }
 
         logger.info("The experiment is ready. Please press ENTER to run it.");
@@ -78,7 +141,6 @@ public class BenchmarkExecutor {
         }
 
         logger.info("Experiment successfully started.");
-
         sc.close();
     }
 }

@@ -9,26 +9,23 @@ import java.sql.SQLException;
 import org.apache.log4j.Logger;
 import java.sql.Types;
 
-public class DbPeekQueueBenchmark extends BenchmarkTest {
-    private static Logger logger = Logger.getLogger(DbPeekQueueBenchmark.class);
-    private final int queue;
-    private final int receiver;
+public class DbPopPeekQueueBenchmark extends BenchmarkTest {
+    private static Logger logger = Logger.getLogger(DbPopPeekQueueBenchmark.class);
     private CallableStatement statement = null;
 
-    public DbPeekQueueBenchmark(Connection connection, int duration, Scanner sc) {
-        super(connection, duration);
-
-        logger.info("Type in the sender: ");
-        queue = sc.nextInt();
-
-        logger.info("Type in the receiver: ");
-        receiver = sc.nextInt();
+    public DbPopPeekQueueBenchmark(Connection connection, int id, BenchmarkInfo benchmarkInfo) {
+        super(connection, benchmarkInfo.getDuration(), benchmarkInfo);
 
         try {
-            statement = connection.prepareCall("{ ? = call peek_queue( ?, ? ) }");
+            if(benchmarkInfo.getOperationType() == BenchmarkExecutor.POP_QUEUE)
+                statement = connection.prepareCall("{ ? = call pop_queue( ?, ? ) }");
+            else
+                statement = connection.prepareCall("{ ? = call peek_queue( ?, ? ) }");
+
             statement.registerOutParameter(1, Types.VARCHAR);
-            statement.setInt(2, receiver);
-            statement.setInt(3, queue);
+            statement.setInt(2, id);
+            if(benchmarkInfo.isCrossQueue())
+                statement.setInt(3, id);
         } catch (SQLException e) {
             logger.error("FAILED to prepare statement");
         }
@@ -44,7 +41,17 @@ public class DbPeekQueueBenchmark extends BenchmarkTest {
         long operationStart, responseTime;
         boolean isSuccessful;
         CustomLogger dataLogger = new CustomLogger("db", toString());
+        int counter = 0;
         while(current <= end) {
+            try {
+                if(!benchmarkInfo.isCrossQueue())
+                    statement.setInt(3, benchmarkInfo.getQueues()[counter % benchmarkInfo.getQueues().length]);
+
+                ++counter;
+            } catch (SQLException e) {
+                logger.error("Error while preparing statement.");
+                continue;
+            }
             operationStart = System.currentTimeMillis();
             try {
                 statement.execute();

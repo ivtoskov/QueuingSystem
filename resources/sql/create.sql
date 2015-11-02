@@ -16,3 +16,6 @@ CREATE TABLE Message (
 	QID INTEGER REFERENCES Queue(id) NOT NULL,
 	atime TIMESTAMP
 );
+
+CREATE INDEX queue_index ON message(qid, rid, atime);
+CREATE INDEX sender_index ON message(sid, rid, atime);

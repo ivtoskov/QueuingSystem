@@ -47,7 +47,12 @@ CREATE OR REPLACE FUNCTION peek_queue(nrid INTEGER, nqid INTEGER) RETURNS VARCHA
 DECLARE
 	msg Message%ROWTYPE;
 BEGIN
-	SELECT * INTO msg FROM Message m WHERE (m.rid=nrid OR m.rid is NULL) AND (m.qid=nqid) ORDER BY m.atime LIMIT 1;
+	SELECT * INTO msg
+  FROM ((SELECT m.* FROM message m WHERE rid = nrid AND qid = nqid ORDER BY atime limit 1)
+  			UNION ALL
+  			(SELECT m.* FROM message m WHERE rid IS NULL AND qid = nqid ORDER BY atime limit 1)) m
+  ORDER BY atime
+  LIMIT 1;
 	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
 END;
 $$ LANGUAGE plpgsql;
@@ -62,7 +67,12 @@ CREATE OR REPLACE FUNCTION pop_queue(nrid INTEGER, nqid INTEGER) RETURNS VARCHAR
 DECLARE
 	msg Message%ROWTYPE;
 BEGIN
-	SELECT * INTO msg FROM Message m WHERE (m.rid=nrid OR m.rid is NULL) AND (m.qid=nqid) ORDER BY m.atime LIMIT 1;
+	SELECT * INTO msg
+  FROM ((SELECT m.* FROM message m WHERE rid = nrid AND qid = nqid ORDER BY atime limit 1)
+  			UNION ALL
+  			(SELECT m.* FROM message m WHERE rid IS NULL AND qid = nqid ORDER BY atime limit 1)) m
+  ORDER BY atime
+  LIMIT 1;
 	DELETE FROM Message m where m.id=msg.id;
 	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
 END;
@@ -79,7 +89,12 @@ CREATE OR REPLACE FUNCTION peek_sender(nrid INTEGER, nsid INTEGER) RETURNS VARCH
 DECLARE
 	msg Message%ROWTYPE;
 BEGIN
-	SELECT * INTO msg FROM Message m WHERE (m.rid=nrid OR m.rid is NULL) AND (m.sid=nsid) ORDER BY m.atime LIMIT 1;
+	SELECT * INTO msg
+  FROM ((SELECT m.* FROM message m WHERE rid = nrid AND sid = nsid ORDER BY atime limit 1)
+        UNION ALL
+        (SELECT m.* FROM message m WHERE rid IS NULL AND sid = nsid ORDER BY atime limit 1)) m
+  ORDER BY atime
+  LIMIT 1;
 	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
 END;
 $$ LANGUAGE plpgsql;
@@ -95,7 +110,12 @@ CREATE OR REPLACE FUNCTION pop_sender(nrid INTEGER, nsid INTEGER) RETURNS VARCHA
 DECLARE
 	msg Message%ROWTYPE;
 BEGIN
-	SELECT * INTO msg FROM Message m WHERE (m.rid=nrid OR m.rid is NULL) AND (m.sid=nsid) ORDER BY m.atime LIMIT 1;
+	SELECT * INTO msg
+  FROM ((SELECT m.* FROM message m WHERE rid = nrid AND sid = nsid ORDER BY atime limit 1)
+        UNION ALL
+        (SELECT m.* FROM message m WHERE rid IS NULL AND sid = nsid ORDER BY atime limit 1)) m
+  ORDER BY atime
+  LIMIT 1;
 	DELETE FROM Message m where m.id=msg.id;
 	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
 END;

@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 public class DatabaseBenchmark {
     private static Logger logger = Logger.getLogger(DatabaseBenchmark.class);
 
-    public static BenchmarkTest prepare(String host, int port, int operationType, int duration, Scanner sc) {
+    public static BenchmarkTest prepare(String host, int port, int id, BenchmarkInfo benchmarkInfo) {
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/asl" +
@@ -20,17 +20,15 @@ public class DatabaseBenchmark {
             return null;
         }
 
-        switch (operationType) {
+        switch (benchmarkInfo.getOperationType()) {
             case BenchmarkExecutor.SEND_MESSAGE:
-                return new DbSendMessageBenchmark(connection, duration, sc);
+                return new DbSendMessageBenchmark(connection, id, benchmarkInfo);
             case BenchmarkExecutor.POP_QUEUE:
-                return new DbPopQueueBenchmark(connection, duration, sc);
             case BenchmarkExecutor.PEEK_QUEUE:
-                return new DbPeekQueueBenchmark(connection, duration, sc);
+                return new DbPopPeekQueueBenchmark(connection, id, benchmarkInfo);
             case BenchmarkExecutor.POP_SENDER:
-                return new DbPopSenderBenchmark(connection, duration, sc);
             case BenchmarkExecutor.PEEK_SENDER:
-                return new DbPeekSenderBenchmark(connection, duration, sc);
+                return new DbPopPeekSenderBenchmark(connection, id, benchmarkInfo);
             default:
                 return null;
         }

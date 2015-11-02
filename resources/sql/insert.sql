@@ -15,7 +15,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 SELECT generate_clients(50);
-SELECT generate_queues(5);
+SELECT generate_queues(10);
 
 INSERT INTO Message(sid, rid, content, qid, atime) VALUES 
 	(1, 2, 'Hello, how are you?', 1, '2015-10-15 22:49:02.235541'),
