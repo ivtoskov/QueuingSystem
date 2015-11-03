@@ -29,14 +29,13 @@ public class DbSendMessageBenchmark extends BenchmarkTest {
                 statement = connection.prepareCall("{ call send_message(?, ?, ?, ?) }");
             } else {
                 statement = connection.prepareCall("{ call send_message(?, ?, ?, ?, ?) }");
+                if(benchmarkInfo.isCrossSend()) {
+                    statement.setInt(5, id);
+                }
             }
 
             if(benchmarkInfo.isCrossQueue()) {
                 statement.setInt(3, id);
-            }
-
-            if(benchmarkInfo.isCrossSend()) {
-                statement.setInt(5, id);
             }
 
             statement.setInt(1, id);
@@ -55,7 +54,7 @@ public class DbSendMessageBenchmark extends BenchmarkTest {
         long end = current + duration;
         long operationStart, responseTime;
         boolean isSuccessful;
-        CustomLogger dataLogger = new CustomLogger("db", toString());
+        CustomLogger dataLogger = new CustomLogger("db", toString() + "sendMessage");
         int counter = 0;
         while(current <= end) {
             try {
@@ -92,5 +91,11 @@ public class DbSendMessageBenchmark extends BenchmarkTest {
         }
         dataLogger.println("-1 " + successfulResponsesCount/seconds);
         dataLogger.flush();
+        try {
+            if(statement != null && !statement.isClosed()) statement.close();
+            if(connection != null && !connection.isClosed()) connection.close();
+        } catch (SQLException e) {
+            logger.error("Error while closing statement/connection.");
+        }
     }
 }

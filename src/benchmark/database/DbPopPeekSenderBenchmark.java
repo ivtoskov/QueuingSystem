@@ -40,7 +40,7 @@ public class DbPopPeekSenderBenchmark extends BenchmarkTest {
         long end = current + duration;
         long operationStart, responseTime;
         boolean isSuccessful;
-        CustomLogger dataLogger = new CustomLogger("db", toString());
+        CustomLogger dataLogger = new CustomLogger("db", toString() + "popPeekSender");
         int counter = 0;
         while(current <= end) {
             try {
@@ -55,7 +55,6 @@ public class DbPopPeekSenderBenchmark extends BenchmarkTest {
             operationStart = System.currentTimeMillis();
             try {
                 statement.execute();
-                logger.info(statement.getString(1));
                 isSuccessful = true;
             } catch (SQLException e) {
                 logger.error("FAILED to execute statement");
@@ -73,5 +72,11 @@ public class DbPopPeekSenderBenchmark extends BenchmarkTest {
         }
         dataLogger.println("-1 " + successfulResponsesCount / seconds);
         dataLogger.flush();
+        try {
+            if(statement != null && !statement.isClosed()) statement.close();
+            if(connection != null && !connection.isClosed()) connection.close();
+        } catch (SQLException e) {
+            logger.error("Error while closing statement/connection.");
+        }
     }
 }

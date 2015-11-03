@@ -14,13 +14,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT generate_clients(50);
-SELECT generate_queues(10);
+SELECT generate_clients(120);
+SELECT generate_queues(100);
 
-INSERT INTO Message(sid, rid, content, qid, atime) VALUES 
-	(1, 2, 'Hello, how are you?', 1, '2015-10-15 22:49:02.235541'),
-	(2, 1, 'I am fine, thank you. How are you?', 1, '2015-10-15 22:50:02.235541'),
-	(1, 2, 'I am also fine, thanks!', 1, '2015-10-15 22:51:02.235541'),
-	(3, 4, 'These guys are boring.', 2, '2015-10-15 22:52:02.235541'),
-	(4, 3, 'I agree, their conversation does not make any sense', 2, '2015-10-15 22:53:02.235541'),
-	(1, 3, 'Hey, what is your problem?',3, '2015-10-15 22:54:02.235541');
+CREATE OR REPLACE FUNCTION reload(senders INTEGER, repeats INTEGER, receivers INTEGER) RETURNS void AS $$
+DECLARE
+	msg VARCHAR(200);
+BEGIN
+	DELETE FROM Message;
+	msg = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+	FOR i IN 1..senders LOOP
+		FOR j IN 1..repeats LOOP
+			FOR k IN 1..receivers LOOP
+				INSERT INTO Message(sid, rid, content, qid, atime)
+				VALUES (i, k, msg, i, now());
+			END LOOP;
+		END LOOP;
+	END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT reload(10, 1000, 20);

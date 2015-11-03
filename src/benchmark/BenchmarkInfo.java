@@ -18,20 +18,6 @@ public class BenchmarkInfo {
         this.broadcast = false;
         this.crossQueue = false;
         this.crossSend = false;
-        this.senders = null;
-        this.receivers = null;
-        this.queues = null;
-    }
-
-    public void reset() {
-        this.operationType = 0;
-        this.messageLength = 0;
-        this.broadcast = false;
-        this.crossQueue = false;
-        this.crossSend = false;
-        this.senders = null;
-        this.receivers = null;
-        this.queues = null;
     }
 
     public int[] getSenders() {
