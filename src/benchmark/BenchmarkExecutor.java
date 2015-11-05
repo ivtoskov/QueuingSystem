@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import org.apache.log4j.Logger;
 import asl.benchmark.database.*;
+import asl.benchmark.general.*;
 
 /**
  * Class that is used to execute different benchmarks.
@@ -39,29 +40,36 @@ public class BenchmarkExecutor {
         logger.info("Please select the SUT of the benchmark: ");
         logger.info("1) database");
         logger.info("2) whole system");
-        int sutType = 1; //sc.nextInt();
+        int sutType = 2; //sc.nextInt();
 
         // Specify the duration of the test
         logger.info("Please specify the duration of the test in seconds: ");
-        int duration = 25; //sc.nextInt();
+        int duration = 1800; // sc.nextInt();
 
+        boolean firstTime = true;
         BenchmarkInfo benchmarkInfo;
         while (true) {
             benchmarkInfo = new BenchmarkInfo();
             benchmarkInfo.setDuration(duration);
             // Specify the type of operation to test
-            logger.info("Starting the definition of a new test...");
-            logger.info("Please select the operation you want to perform: ");
-            logger.info("1) pop queue");
-            logger.info("2) peek queue");
-            logger.info("3) pop sender");
-            logger.info("4) peek sender");
-            logger.info("5) send message");
-            logger.info("----------------");
-            logger.info("6) to run the experiment");
-            int operationType = sc.nextInt();
-            if (operationType == 6) break;
-            benchmarkInfo.setOperationType(operationType);
+            int operationType = -1;
+            if(firstTime) {
+                logger.info("Starting the definition of a new test...");
+                logger.info("Please select the operation you want to perform: ");
+                logger.info("1) pop queue");
+                logger.info("2) peek queue");
+                logger.info("3) pop sender");
+                logger.info("4) peek sender");
+                logger.info("5) send message");
+                logger.info("----------------");
+                logger.info("6) to run the experiment");
+                operationType = sc.nextInt();
+                if (operationType == 6) break;
+                benchmarkInfo.setOperationType(operationType);
+                firstTime = false;
+            } else {
+                break;
+            }
 
             logger.info("Please type in the number of clients you want to start: ");
             int numOfClients = sc.nextInt();
@@ -75,7 +83,7 @@ public class BenchmarkExecutor {
                     int msgLength = 200; //sc.nextInt();
                     benchmarkInfo.setMessageLength(msgLength);
                     logger.info("Type in 1 if you want to cross send, 0 if you want to broadcast: ");
-                    int broadCastOrCrossSend = 2;//sc.nextInt();
+                    int broadCastOrCrossSend = 2; //sc.nextInt();
                     if(broadCastOrCrossSend == 1) benchmarkInfo.setCrossSend(true);
                     else if(broadCastOrCrossSend == 0) benchmarkInfo.setBroadcast(true);
                     else {
@@ -92,12 +100,12 @@ public class BenchmarkExecutor {
                 case POP_QUEUE:
                 case PEEK_QUEUE:
                     logger.info("Type in the number of queues(0 to cross queue): ");
-                    int numOfQueues = 10;//sc.nextInt();
+                    int numOfQueues = 10; //sc.nextInt();
                     if(numOfQueues == 0) benchmarkInfo.setCrossQueue(true);
                     else {
                         int[] queues = new int[numOfQueues];
                         logger.info("Type in the first queue: ");
-                        int firstQueue = 1;//sc.nextInt();
+                        int firstQueue = 1; //sc.nextInt();
                         for(int i = 0; i < numOfQueues; ++i) {
                             queues[i] = firstQueue + i;
                         }
@@ -124,6 +132,10 @@ public class BenchmarkExecutor {
             if(sutType == 1)
                 for(int i = 0; i < numOfClients; ++i) {
                     testInstances.add(DatabaseBenchmark.prepare(host, port, offset + i, benchmarkInfo));
+                }
+            else if(sutType == 2)
+                for(int i = 0; i < numOfClients; ++i) {
+                    testInstances.add(GeneralBenchmark.prepare(host, port, offset + i, benchmarkInfo));
                 }
         }
 

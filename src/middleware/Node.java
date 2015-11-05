@@ -33,7 +33,7 @@ public class Node {
     public static List<SocketWrapper> socketsToBeClosed;
 
     public static void main(String args[]) {
-        NUM_OF_CONNECTIONS = (Runtime.getRuntime().availableProcessors() / 2) + 1;
+        NUM_OF_CONNECTIONS = 15;
         notShutDown = true;
         int port = -1;
         String host = "localhost";
@@ -58,7 +58,7 @@ public class Node {
         Socket clientSocket = null;
         try {
             // Initialize a blocking queue for the incomming client connections
-            sockets = new ArrayBlockingQueue<SocketWrapper>(Runtime.getRuntime().availableProcessors() * 5);
+            sockets = new ArrayBlockingQueue<SocketWrapper>(NUM_OF_CONNECTIONS * 5);
             // Initialize a list with client sockets that need to be closed after node's termination
             socketsToBeClosed = new ArrayList<SocketWrapper>();
             // Initialize a listener server socket
@@ -122,7 +122,7 @@ public class Node {
      * Initializes the necessary number of workers for this middleware node.
      */
     private static void initWorkers() {
-        int numberOfWorkers = Runtime.getRuntime().availableProcessors();
+        int numberOfWorkers = NUM_OF_CONNECTIONS * 2;
         while(numberOfWorkers-- > 0) {
             (new Thread(new Worker())).start();
         }

@@ -47,15 +47,15 @@ public class DbSendMessageBenchmark extends BenchmarkTest {
 
     @Override
     public void run() {
+        long operationStart, responseTime;
+        boolean isSuccessful;
+        CustomLogger dataLogger = new CustomLogger("db", toString() + "sendMessage");
+        int counter = 0;
         double seconds = duration / 1000.0;
         double successfulResponsesCount = 0.0;
         long current = System.currentTimeMillis();
         long start = current;
         long end = current + duration;
-        long operationStart, responseTime;
-        boolean isSuccessful;
-        CustomLogger dataLogger = new CustomLogger("db", toString() + "sendMessage");
-        int counter = 0;
         while(current <= end) {
             try {
                 if(!benchmarkInfo.isCrossQueue())
@@ -97,5 +97,6 @@ public class DbSendMessageBenchmark extends BenchmarkTest {
         } catch (SQLException e) {
             logger.error("Error while closing statement/connection.");
         }
+        dataLogger.close();
     }
 }

@@ -78,5 +78,6 @@ public class DbPopPeekSenderBenchmark extends BenchmarkTest {
         } catch (SQLException e) {
             logger.error("Error while closing statement/connection.");
         }
+        dataLogger.close();
     }
 }

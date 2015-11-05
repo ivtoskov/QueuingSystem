@@ -44,20 +44,20 @@ public class PopPeekSenderBenchmark extends BenchmarkTest {
 
     @Override
     public void run() {
-        double seconds = duration / 1000.0;
-        double successfulResponsesCount = 0.0;
-        long current = System.currentTimeMillis();
-        long start = current;
-        long end = current + duration;
         long operationStart = 0, responseTime = 0;
         boolean isSuccessful;
-        CustomLogger dataLogger = new CustomLogger("general", toString() + "sendMessage");
+        CustomLogger dataLogger = new CustomLogger("general", toString() + "popPeek");
         int counter = 0;
         int qid, rid;
         Command command;
         ObjectOutputStream oos = sw.getOos();
         ObjectInputStream ois = sw.getOis();
         String response = null;
+        double seconds = duration / 1000.0;
+        double successfulResponsesCount = 0.0;
+        long current = System.currentTimeMillis();
+        long start = current;
+        long end = current + duration;
         while(current <= end) {
             command = commands.get(counter % commands.size());
             ++counter;
@@ -85,11 +85,15 @@ public class PopPeekSenderBenchmark extends BenchmarkTest {
                 logger.info(response);
             }
 
+            try {
+                Thread.sleep(15);
+            } catch (InterruptedException e) {}
             current = System.currentTimeMillis();
         }
 
         dataLogger.println("-1 " + successfulResponsesCount/seconds);
         dataLogger.flush();
         sw.close();
+        dataLogger.close();
     }
 }

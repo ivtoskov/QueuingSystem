@@ -31,21 +31,15 @@ public class GeneralBenchmark {
         switch (benchmarkInfo.getOperationType()) {
             case BenchmarkExecutor.SEND_MESSAGE:
                 return new SendMessageBenchmark(sw, id, benchmarkInfo);
+            case BenchmarkExecutor.POP_QUEUE:
+            case BenchmarkExecutor.PEEK_QUEUE:
+                return new PopPeekQueueBenchmark(sw, id, benchmarkInfo);
+            case BenchmarkExecutor.POP_SENDER:
+            case BenchmarkExecutor.PEEK_SENDER:
+                return new PopPeekSenderBenchmark(sw, id, benchmarkInfo);
             default:
                 return null;
         }
-        /*switch (benchmarkInfo.getOperationType()) {
-            case BenchmarkExecutor.SEND_MESSAGE:
-                return new DbSendMessageBenchmark(connection, id, benchmarkInfo);
-            case BenchmarkExecutor.POP_QUEUE:
-            case BenchmarkExecutor.PEEK_QUEUE:
-                return new DbPopPeekQueueBenchmark(connection, id, benchmarkInfo);
-            case BenchmarkExecutor.POP_SENDER:
-            case BenchmarkExecutor.PEEK_SENDER:
-                return new DbPopPeekSenderBenchmark(connection, id, benchmarkInfo);
-            default:
-                return null;
-        }*/
     }
 
 }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
+import java.lang.InterruptedException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -34,7 +35,7 @@ public class SendMessageBenchmark extends BenchmarkTest {
                 int[] receivers =benchmarkInfo.getReceivers();
                 for(int qi = 0; qi < queues.length; ++qi) {
                     for(int ri = 0; ri < receivers.length; ++ri) {
-                        commands.add(new Command(new Message(content, id, queues[qi], receivers[ri]),
+                        commands.add(new Command(new Message(content, id, receivers[ri], queues[qi]),
                                 Command.Type.SEND_TO));
                     }
                 }
@@ -46,7 +47,7 @@ public class SendMessageBenchmark extends BenchmarkTest {
                     }
                 } else {
                     for(int qi = 0; qi < queues.length; ++qi) {
-                        commands.add(new Command(new Message(content, id, queues[qi], id),
+                        commands.add(new Command(new Message(content, id, id, queues[qi]),
                                 Command.Type.SEND_TO));
                     }
                 }
@@ -55,7 +56,7 @@ public class SendMessageBenchmark extends BenchmarkTest {
             if(!benchmarkInfo.isCrossSend() && !benchmarkInfo.isBroadcast()) {
                 int[] receivers = benchmarkInfo.getReceivers();
                 for(int ri = 0; ri < receivers.length; ++ri) {
-                    commands.add(new Command(new Message(content, id, id, receivers[ri]),
+                    commands.add(new Command(new Message(content, id, receivers[ri], id),
                             Command.Type.SEND_TO));
                 }
             } else {
@@ -72,12 +73,6 @@ public class SendMessageBenchmark extends BenchmarkTest {
 
     @Override
     public void run() {
-        double seconds = duration / 1000.0;
-        double successfulResponsesCount = 0.0;
-        long current = System.currentTimeMillis();
-        long start = current;
-        long end = current + duration;
-        long operationStart = 0, responseTime = 0;
         boolean isSuccessful;
         CustomLogger dataLogger = new CustomLogger("general", toString() + "sendMessage");
         int counter = 0;
@@ -85,6 +80,13 @@ public class SendMessageBenchmark extends BenchmarkTest {
         Command command;
         ObjectOutputStream oos = sw.getOos();
         ObjectInputStream ois = sw.getOis();
+        long operationStart = 0, responseTime = 0;
+        double seconds = duration / 1000.0;
+        double successfulResponsesCount = 0.0;
+        long current = System.currentTimeMillis();
+        long start = current;
+        long end = current + duration;
+
         while(current <= end) {
             command = commands.get(counter % commands.size());
             ++counter;
@@ -111,11 +113,16 @@ public class SendMessageBenchmark extends BenchmarkTest {
                 logger.info("Unsuccessful attempt");
             }
 
+            try {
+                Thread.sleep(15);
+            } catch (InterruptedException e) {}
+
             current = System.currentTimeMillis();
         }
 
         dataLogger.println("-1 " + successfulResponsesCount/seconds);
         dataLogger.flush();
         sw.close();
+        dataLogger.close();
     }
 }

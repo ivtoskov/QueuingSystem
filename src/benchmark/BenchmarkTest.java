@@ -10,11 +10,6 @@ public abstract class BenchmarkTest extends Thread {
     protected BenchmarkInfo benchmarkInfo;
     protected SocketWrapper sw;
 
-    public BenchmarkTest(Connection connection, int duration) {
-        this.connection = connection;
-        this.duration = duration * 1000;
-    }
-
     public BenchmarkTest(Connection connection, int duration, BenchmarkInfo benchmarkInfo) {
         this.connection = connection;
         this.duration = duration * 1000;
