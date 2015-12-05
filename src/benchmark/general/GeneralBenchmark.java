@@ -11,9 +11,22 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import org.apache.log4j.Logger;
 
+/**
+ * A factory class that generates test objects
+ * based on specified configuration.
+ */
 public class GeneralBenchmark {
     private static Logger logger = Logger.getLogger(GeneralBenchmark.class);
 
+    /**
+     * A method that prepares a benchmark test that should be executed.
+     *
+     * @param host Host of the database/middleware to connect to.
+     * @param port Port of the database/middleware to connect to.
+     * @param id The id of the simulated client.
+     * @param benchmarkInfo The information accompanying the benchmark.
+     * @return A complete test objects that corresponds to a benchmark test.
+     */
     public static BenchmarkTest prepare(String host, int port, int id, BenchmarkInfo benchmarkInfo) {
         Socket socket = null;
         SocketWrapper sw = null;

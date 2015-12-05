@@ -85,9 +85,6 @@ public class PopPeekSenderBenchmark extends BenchmarkTest {
                 logger.info(response);
             }
 
-            try {
-                Thread.sleep(15);
-            } catch (InterruptedException e) {}
             current = System.currentTimeMillis();
         }
 

@@ -13,6 +13,10 @@ import java.io.ObjectOutputStream;
 import java.lang.InterruptedException;
 import java.net.Socket;
 
+/**
+ * A worker in a system that handles different
+ * requests from the clients.
+ */
 public class Worker extends Thread {
     private Logger logger = Logger.getLogger(Worker.class);
     private Socket socket;

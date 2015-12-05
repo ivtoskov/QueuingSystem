@@ -1,5 +1,9 @@
 package asl.benchmark;
 
+/**
+ * A java bean class that contains all the
+ * needed information for running benchmarks.
+ */
 public class BenchmarkInfo {
     private int[] senders;
     private int[] receivers;

@@ -26,6 +26,7 @@ import java.util.concurrent.BlockingQueue;
 public class Node {
     private static Logger logger = Logger.getLogger(Node.class);
     private static int NUM_OF_CONNECTIONS;
+    private static int NUM_OF_WORKERS;
     public static BlockingQueue<SocketWrapper> sockets;
     public static BlockingQueue<ConnectionWrapper> connections;
     public static boolean notShutDown;
@@ -34,6 +35,7 @@ public class Node {
 
     public static void main(String args[]) {
         NUM_OF_CONNECTIONS = 15;
+        NUM_OF_WORKERS = 30;
         notShutDown = true;
         int port = -1;
         String host = "localhost";
@@ -49,8 +51,12 @@ public class Node {
             if(args.length > 2)
                 databasePort = Integer.parseInt(args[2]);
 
+            // Needed only to test the max throughput
+            // NUM_OF_WORKERS = Integer.parseInt(args[3]);
+            // NUM_OF_CONNECTIONS = Integer.parseInt(args[4]);
+
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            logger.error("Usage: java -jar Node <port>");
+            logger.error("Usage: java -jar Node <port> [<dbhost>] [<dbport>]");
             System.exit(1);
         }
 
@@ -122,7 +128,7 @@ public class Node {
      * Initializes the necessary number of workers for this middleware node.
      */
     private static void initWorkers() {
-        int numberOfWorkers = NUM_OF_CONNECTIONS * 2;
+        int numberOfWorkers = NUM_OF_WORKERS;
         while(numberOfWorkers-- > 0) {
             (new Thread(new Worker())).start();
         }
@@ -139,8 +145,8 @@ public class Node {
             return;
         }
 
-        int numberOfWorkers = NUM_OF_CONNECTIONS;
-        while(numberOfWorkers-- > 0) {
+        int numOfConnections = NUM_OF_CONNECTIONS;
+        while(numOfConnections-- > 0) {
             try {
                 Connection c = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/asl" +
                                 "",

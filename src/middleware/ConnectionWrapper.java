@@ -14,6 +14,11 @@ import java.util.List;
 import asl.util.Command;
 import asl.util.Message;
 
+/**
+ * A class that wraps a connection together with its prepared statements
+ * and defines methods that serve as an interface to the database
+ * for the different supported operations.
+ */
 public class ConnectionWrapper {
     private static final String FAILED_TO_POP_SENDER = "FAILED to pop sender.";
     private static final String FAILED_TO_PEEK_SENDER = "FAILED to peek sender.";

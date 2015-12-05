@@ -113,10 +113,6 @@ public class SendMessageBenchmark extends BenchmarkTest {
                 logger.info("Unsuccessful attempt");
             }
 
-            try {
-                Thread.sleep(15);
-            } catch (InterruptedException e) {}
-
             current = System.currentTimeMillis();
         }
 

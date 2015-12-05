@@ -78,6 +78,8 @@
       <arg value="${port}"/>
       <arg value="${dbhost}"/>
       <arg value="${dbport}"/>
+      <arg value="${workers}"/>
+      <arg value="${cons}"/>
     </java>
   </target>
 

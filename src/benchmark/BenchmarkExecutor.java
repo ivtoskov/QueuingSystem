@@ -44,7 +44,7 @@ public class BenchmarkExecutor {
 
         // Specify the duration of the test
         logger.info("Please specify the duration of the test in seconds: ");
-        int duration = 1800; // sc.nextInt();
+        int duration = 25; // sc.nextInt();
 
         boolean firstTime = true;
         BenchmarkInfo benchmarkInfo;
@@ -72,15 +72,15 @@ public class BenchmarkExecutor {
             }
 
             logger.info("Please type in the number of clients you want to start: ");
-            int numOfClients = sc.nextInt();
+            int numOfClients = 15; //sc.nextInt();
 
             logger.info("Please type in the offset of the id's: ");
-            int offset = sc.nextInt();
+            int offset = 1; //sc.nextInt();
 
             switch (operationType) {
                 case SEND_MESSAGE:
                     logger.info("Please type in the length of the messages: ");
-                    int msgLength = 200; //sc.nextInt();
+                    int msgLength = sc.nextInt();
                     benchmarkInfo.setMessageLength(msgLength);
                     logger.info("Type in 1 if you want to cross send, 0 if you want to broadcast: ");
                     int broadCastOrCrossSend = 2; //sc.nextInt();
@@ -88,7 +88,7 @@ public class BenchmarkExecutor {
                     else if(broadCastOrCrossSend == 0) benchmarkInfo.setBroadcast(true);
                     else {
                         logger.info("Type in the number of receivers: ");
-                        int numOfReceivers = sc.nextInt();
+                        int numOfReceivers = numOfClients; //sc.nextInt();
                         int[] receivers = new int[numOfReceivers];
                         logger.info("Type in the first receiver: ");
                         int firstReceiver = 1;//sc.nextInt();
@@ -115,7 +115,7 @@ public class BenchmarkExecutor {
                 case POP_SENDER:
                 case PEEK_SENDER:
                     logger.info("Type in the number of senders to peek/pop from(0 for cross pop/peek): ");
-                    int numOfSenders = sc.nextInt();
+                    int numOfSenders = numOfClients; //sc.nextInt();
                     if(numOfSenders == 0) benchmarkInfo.setCrossSend(true);
                     else {
                         int[] senders = new int[numOfSenders];

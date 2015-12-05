@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.util.Scanner;
 import asl.middleware.SocketWrapper;
 
+/**
+ * An abstract class that represents
+ * a single benchmark test.
+ */
 public abstract class BenchmarkTest extends Thread {
     protected Connection connection;
     protected long duration;

@@ -7,6 +7,10 @@ import java.util.Scanner;
 import java.sql.DriverManager;
 import org.apache.log4j.Logger;
 
+/**
+ * A factory class that generates database test
+ * objects based on specified configuration.
+ */
 public class DatabaseBenchmark {
     private static Logger logger = Logger.getLogger(DatabaseBenchmark.class);
 
