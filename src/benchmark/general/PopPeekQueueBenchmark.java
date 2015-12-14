@@ -44,7 +44,6 @@ public class PopPeekQueueBenchmark extends BenchmarkTest {
 
     @Override
     public void run() {
-        long operationStart = 0, responseTime = 0;
         boolean isSuccessful;
         CustomLogger dataLogger = new CustomLogger("general", toString() + "popPeek");
         int counter = 0;
@@ -56,7 +55,6 @@ public class PopPeekQueueBenchmark extends BenchmarkTest {
         double seconds = duration / 1000.0;
         double successfulResponsesCount = 0.0;
         long current = System.currentTimeMillis();
-        long start = current;
         long end = current + duration;
 
         while(current <= end) {
@@ -64,11 +62,9 @@ public class PopPeekQueueBenchmark extends BenchmarkTest {
             ++counter;
 
             try {
-                operationStart = System.currentTimeMillis();
                 oos.writeUnshared(command);
                 oos.flush();
                 response = (String) ois.readUnshared();
-                responseTime = System.currentTimeMillis() - operationStart;
                 if(response != null && response != "" && !response.startsWith("FAILED")) {
                     isSuccessful = true;
                 } else {
@@ -80,7 +76,7 @@ public class PopPeekQueueBenchmark extends BenchmarkTest {
 
             if(isSuccessful) {
                 successfulResponsesCount += 1.0;
-                dataLogger.println( (operationStart - start) + " " + responseTime);
+                dataLogger.println(response);
             } else {
                 logger.info("Unsuccessful attempt");
                 logger.info(response);
@@ -89,9 +85,8 @@ public class PopPeekQueueBenchmark extends BenchmarkTest {
             current = System.currentTimeMillis();
         }
 
-        dataLogger.println("-1 " + successfulResponsesCount/seconds);
         dataLogger.flush();
         sw.close();
-            dataLogger.close();
+        dataLogger.close();
     }
 }

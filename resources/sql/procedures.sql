@@ -53,7 +53,7 @@ BEGIN
   			(SELECT m.* FROM message m WHERE rid IS NULL AND qid = nqid ORDER BY atime limit 1)) m
   ORDER BY atime
   LIMIT 1;
-	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
+	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -74,7 +74,7 @@ BEGIN
   ORDER BY atime
   LIMIT 1;
 	DELETE FROM Message m where m.id=msg.id;
-	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
+	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -95,7 +95,7 @@ BEGIN
         (SELECT m.* FROM message m WHERE rid IS NULL AND sid = nsid ORDER BY atime limit 1)) m
   ORDER BY atime
   LIMIT 1;
-	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
+	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -117,7 +117,7 @@ BEGIN
   ORDER BY atime
   LIMIT 1;
 	DELETE FROM Message m where m.id=msg.id;
-	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content || '", ARRIVAL TIME: ' || msg.atime;
+	return 'FROM: ' || msg.sid || ', CONTENT: "' || msg.content;
 END;
 $$ LANGUAGE plpgsql;
 

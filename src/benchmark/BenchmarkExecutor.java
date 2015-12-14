@@ -44,7 +44,7 @@ public class BenchmarkExecutor {
 
         // Specify the duration of the test
         logger.info("Please specify the duration of the test in seconds: ");
-        int duration = 25; // sc.nextInt();
+        int duration = 30; // sc.nextInt();
 
         boolean firstTime = true;
         BenchmarkInfo benchmarkInfo;
@@ -80,7 +80,7 @@ public class BenchmarkExecutor {
             switch (operationType) {
                 case SEND_MESSAGE:
                     logger.info("Please type in the length of the messages: ");
-                    int msgLength = sc.nextInt();
+                    int msgLength = 200; //sc.nextInt();
                     benchmarkInfo.setMessageLength(msgLength);
                     logger.info("Type in 1 if you want to cross send, 0 if you want to broadcast: ");
                     int broadCastOrCrossSend = 2; //sc.nextInt();

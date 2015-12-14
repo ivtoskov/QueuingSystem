@@ -84,20 +84,18 @@ public class SendMessageBenchmark extends BenchmarkTest {
         double seconds = duration / 1000.0;
         double successfulResponsesCount = 0.0;
         long current = System.currentTimeMillis();
-        long start = current;
         long end = current + duration;
+        String response = null;
 
         while(current <= end) {
             command = commands.get(counter % commands.size());
             ++counter;
 
             try {
-                operationStart = System.currentTimeMillis();
                 oos.writeUnshared(command);
                 oos.flush();
-                String response = (String) ois.readUnshared();
-                responseTime = System.currentTimeMillis() - operationStart;
-                if("SUCCESSFULLY sent message".equals(response)) {
+                response = (String) ois.readUnshared();
+                if(response != null && !response.startsWith("FAILED")) {
                     isSuccessful = true;
                 } else {
                     isSuccessful = false;
@@ -108,7 +106,7 @@ public class SendMessageBenchmark extends BenchmarkTest {
 
             if(isSuccessful) {
                 successfulResponsesCount += 1.0;
-                dataLogger.println( (operationStart - start) + " " + responseTime);
+                dataLogger.println(response);
             } else {
                 logger.info("Unsuccessful attempt");
             }
@@ -116,7 +114,6 @@ public class SendMessageBenchmark extends BenchmarkTest {
             current = System.currentTimeMillis();
         }
 
-        dataLogger.println("-1 " + successfulResponsesCount/seconds);
         dataLogger.flush();
         sw.close();
         dataLogger.close();

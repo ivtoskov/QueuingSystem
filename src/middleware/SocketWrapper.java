@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import org.apache.log4j.Logger;
+import asl.util.TimeTracker;
 
 /**
  * A wrapper class that ties together a socket and its
@@ -15,11 +16,13 @@ public class SocketWrapper {
     private final Socket socket;
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
+    private final TimeTracker timeTracker;
 
     public SocketWrapper(Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
         this.socket = socket;
         this.ois = ois;
         this.oos = oos;
+        this.timeTracker = new TimeTracker();
     }
 
     public Socket getSocket() {
@@ -32,6 +35,10 @@ public class SocketWrapper {
 
     public ObjectOutputStream getOos() {
         return oos;
+    }
+
+    public TimeTracker getTimeTracker() {
+        return timeTracker;
     }
 
     public void close() {

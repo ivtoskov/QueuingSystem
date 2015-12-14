@@ -34,9 +34,11 @@ public class Worker extends Thread {
         while (Node.notShutDown) {
             try {
                 sw = Node.sockets.take();
+                sw.getTimeTracker().setMiddlewareWaitingTime();
                 ret = handle(sw);
                 if(ret && Node.notShutDown) {
                     Node.sockets.put(sw);
+                    sw.getTimeTracker().reset();
                 } else {
                     if(sw != null) sw.close();
                     Node.socketsToBeClosed.remove(sw);
@@ -57,12 +59,21 @@ public class Worker extends Thread {
         try {
             Command command = (Command) ois.readUnshared();
             try {
+                sw.getTimeTracker().setMiddlewareServiceTime();
                 cw = Node.connections.take();
+                sw.getTimeTracker().setDatabaseWaitingTime();
                 String response = cw.handle(command);
+                sw.getTimeTracker().setDatabaseServiceTime();
+                sw.getTimeTracker().setResponseTime();
                 if(cw != null && !cw.isCorrupted()) {
                     Node.connections.put(cw);
                 }
-                oos.writeUnshared(response);
+                if(response.contains("FAILED")) {
+                    oos.writeUnshared(response);
+                } else {
+                    oos.writeUnshared(sw.getTimeTracker().toString());
+                }
+
                 oos.flush();
             } catch (InterruptedException e) {
                 logger.error("The worker got interrupted.");
