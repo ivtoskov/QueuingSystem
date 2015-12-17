@@ -7,7 +7,6 @@ import asl.util.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.ClassNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -49,22 +48,37 @@ public class PopPeekSenderBenchmark extends BenchmarkTest {
         int counter = 0;
         int qid, rid;
         Command command;
+        String response = null;
         ObjectOutputStream oos = sw.getOos();
         ObjectInputStream ois = sw.getOis();
-        String response = null;
+        // Warmup
+        for (int i = 0; i < 100; i++) {
+            try {
+                command = commands.get(i % commands.size());
+                oos.writeUnshared(command);
+                oos.flush();
+                response = (String) ois.readUnshared();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
         double seconds = duration / 1000.0;
-        double successfulResponsesCount = 0.0;
         long current = System.currentTimeMillis();
         long end = current + duration;
+        long startOp = 0L, realRp = 0L;
+        long thinkBegin = -1L, thinkEnd = 0L;
+
         while(current <= end) {
             command = commands.get(counter % commands.size());
             ++counter;
 
             try {
+                startOp = System.nanoTime();
                 oos.writeUnshared(command);
                 oos.flush();
                 response = (String) ois.readUnshared();
-                if(response != null && response != "" && !response.startsWith("FAILED")) {
+                realRp = System.nanoTime() - startOp;
+                if(response != null && !response.startsWith("FAILED")) {
                     isSuccessful = true;
                 } else {
                     isSuccessful = false;
@@ -74,11 +88,9 @@ public class PopPeekSenderBenchmark extends BenchmarkTest {
             }
 
             if(isSuccessful) {
-                successfulResponsesCount += 1.0;
-                dataLogger.println(response);
+                dataLogger.println(response + "," + String.format("%.2f", realRp / 1000000.0));
             } else {
                 logger.info("Unsuccessful attempt");
-                logger.info(response);
             }
 
             current = System.currentTimeMillis();

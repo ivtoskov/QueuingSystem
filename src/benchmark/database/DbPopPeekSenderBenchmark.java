@@ -40,7 +40,7 @@ public class DbPopPeekSenderBenchmark extends BenchmarkTest {
         long end = current + duration;
         long operationStart, responseTime;
         boolean isSuccessful;
-        CustomLogger dataLogger = new CustomLogger("db", toString() + "popPeekSender");
+        CustomLogger dataLogger = new CustomLogger("general", toString() + "popPeekSender");
         int counter = 0;
         while(current <= end) {
             try {

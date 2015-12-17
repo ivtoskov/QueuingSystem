@@ -49,7 +49,7 @@ public class DbSendMessageBenchmark extends BenchmarkTest {
     public void run() {
         long operationStart, responseTime;
         boolean isSuccessful;
-        CustomLogger dataLogger = new CustomLogger("db", toString() + "sendMessage");
+        CustomLogger dataLogger = new CustomLogger("general", toString() + "sendMessage");
         int counter = 0;
         double seconds = duration / 1000.0;
         double successfulResponsesCount = 0.0;

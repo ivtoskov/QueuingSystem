@@ -40,11 +40,11 @@ public class BenchmarkExecutor {
         logger.info("Please select the SUT of the benchmark: ");
         logger.info("1) database");
         logger.info("2) whole system");
-        int sutType = 2; //sc.nextInt();
+        int sutType = 1; //sc.nextInt();
 
         // Specify the duration of the test
         logger.info("Please specify the duration of the test in seconds: ");
-        int duration = 30; // sc.nextInt();
+        int duration = 25; // sc.nextInt();
 
         boolean firstTime = true;
         BenchmarkInfo benchmarkInfo;
@@ -72,7 +72,7 @@ public class BenchmarkExecutor {
             }
 
             logger.info("Please type in the number of clients you want to start: ");
-            int numOfClients = 15; //sc.nextInt();
+            int numOfClients = sc.nextInt();
 
             logger.info("Please type in the offset of the id's: ");
             int offset = 1; //sc.nextInt();

@@ -78,23 +78,36 @@ public class SendMessageBenchmark extends BenchmarkTest {
         int counter = 0;
         int qid, rid;
         Command command;
+        String response = null;
         ObjectOutputStream oos = sw.getOos();
         ObjectInputStream ois = sw.getOis();
+        // Warmup
+        for (int i = 0; i < 100; i++) {
+            try {
+                command = commands.get(i % commands.size());
+                oos.writeUnshared(command);
+                oos.flush();
+                response = (String) ois.readUnshared();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
         long operationStart = 0, responseTime = 0;
         double seconds = duration / 1000.0;
-        double successfulResponsesCount = 0.0;
         long current = System.currentTimeMillis();
         long end = current + duration;
-        String response = null;
+        long startOp = 0L, realRp = 0L;
 
         while(current <= end) {
             command = commands.get(counter % commands.size());
             ++counter;
 
             try {
+                startOp = System.nanoTime();
                 oos.writeUnshared(command);
                 oos.flush();
                 response = (String) ois.readUnshared();
+                realRp = System.nanoTime() - startOp;
                 if(response != null && !response.startsWith("FAILED")) {
                     isSuccessful = true;
                 } else {
@@ -105,8 +118,7 @@ public class SendMessageBenchmark extends BenchmarkTest {
             }
 
             if(isSuccessful) {
-                successfulResponsesCount += 1.0;
-                dataLogger.println(response);
+                dataLogger.println(response + "," + String.format("%.2f", realRp / 1000000.0));
             } else {
                 logger.info("Unsuccessful attempt");
             }

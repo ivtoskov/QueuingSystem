@@ -34,4 +34,4 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT reload(10, 1000, 20);
+SELECT reload(40, 125, 40);
